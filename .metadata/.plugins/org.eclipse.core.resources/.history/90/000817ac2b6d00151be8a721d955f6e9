@@ -1,0 +1,9 @@
+
+public class Logger {
+	public Logger() {}
+
+	public void WriteLine( String text ) {
+		System.out.println( text );
+	}
+
+}
