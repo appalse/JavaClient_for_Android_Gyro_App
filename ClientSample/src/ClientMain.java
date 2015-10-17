@@ -6,7 +6,6 @@ public class ClientMain {
 	private static Logger logger;
 	private static Socket s;
 	private static String serverIpAddress = "192.168.0.101"; 
-	//private static String serverIpAddress = "176.14.245.232";
 
 	public static void main(String[] args) {
 		logger = Logger.GetLogger();
