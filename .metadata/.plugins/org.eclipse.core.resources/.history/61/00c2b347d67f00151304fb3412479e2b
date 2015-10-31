@@ -1,0 +1,97 @@
+import java.net.*;
+import java.nio.ByteBuffer;
+import java.io.*;
+
+
+public class ClientMain {
+
+	private static Logger logger;
+	private static Socket s;
+	//private static String serverIpAddress = "192.168.0.103"; 
+	private static String serverIpAddress = "192.168.0.102";
+
+	public static void main(String[] args) {
+		
+		logger = Logger.GetLogger();
+		
+		int serverPort[] = { 12346, 12347 };	
+		try{
+			if( !attemptToOpen( serverPort[0] ) ) {
+				if( !attemptToOpen( serverPort[1] ) ) {
+					throw new Exception("Cannot open connection");					
+				}
+			}
+			
+			InputStream is = s.getInputStream();
+			byte buf[] = new byte[36];
+			int r;
+			System.out.println("start:");
+			while(true){
+				Thread.sleep(4000);
+				//System.out.println("add:");
+				if(s.isClosed() || !s.isConnected()){
+					logger.WriteLine("socket is closed");
+					break;
+				}
+				//System.out.println("read:");
+				r = is.read(buf);
+				logger.WriteLine("readed package length = " + r);
+				Byte length = new Byte(buf[0]);
+				logger.WriteLine("real package length = " + length);
+				// ID сенсора например 426 = акселерометр
+				byte[] tempId = {buf[1], buf[2]};
+				ByteBuffer wrappedId = ByteBuffer.wrap(tempId); // big-endian by default
+				short idSensor = wrappedId.getShort();
+				String sensorName = getSensorName(idSensor);
+				logger.WriteLine("idSensor = " + sensorName);
+				
+				// время срабатывания сенсора
+				byte[] tempTimeStamp = {buf[3], buf[4], buf[5], buf[6], buf[7], buf[8], buf[9], buf[10]};
+				ByteBuffer wrappedTimeStamp = ByteBuffer.wrap(tempTimeStamp); // big-endian by default
+				long timeStamp = wrappedTimeStamp.getLong();
+				logger.WriteLine("timeStamp = " + timeStamp);
+				
+				// координаты x y z
+				byte[] tempX = new byte[8];
+				for(int i = 11; i <=18; ++i ) tempX[i-11] = buf[i];		
+				ByteBuffer wrappedX = ByteBuffer.wrap(tempX); // big-endian by default
+				double x = wrappedX.getDouble();
+				logger.WriteLine("x = " + x + ", ");
+				
+				byte[] tempY = new byte[8];
+				for(int i = 19; i <= 26; ++i ) tempY[i-19] = buf[i];
+				ByteBuffer wrappedY = ByteBuffer.wrap(tempY); // big-endian by default
+				double y = wrappedY.getDouble();
+				logger.WriteLine("y = " + y + ", ");
+				
+				byte[] tempZ = new byte[8];
+				for(int i = 27; i <= 34; ++i ) tempZ[i-27] = buf[i];
+				ByteBuffer wrappedZ = ByteBuffer.wrap(tempZ); // big-endian by default
+				double z = wrappedZ.getDouble();
+				logger.WriteLine("z = " + z);
+			}
+		} catch(Exception e) {
+			logger.WriteLine( e.getMessage() );
+		}
+		System.out.println("end");
+	}
+	
+	private static String getSensorName( short idSensor)
+	{
+		if( idSensor == 0x1A9 ) return "GYROSCOPE";
+		if( idSensor == 0x1AA ) return "ACCELEROMETER";
+		return "WRONG SENSOR";
+	}
+	
+	private static boolean attemptToOpen( int port ) {
+		try{
+			s = new Socket(serverIpAddress, port);
+		}catch(Exception e) {
+			logger.WriteLine( e.getMessage() );
+			return false;
+		}	
+		logger.WriteLine("port " + Integer.toString(port) + " connected");
+		return true;
+	}
+
+}
