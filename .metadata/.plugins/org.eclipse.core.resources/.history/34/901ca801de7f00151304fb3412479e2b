@@ -7,7 +7,12 @@ public class ClientMain {
 
 	private static Logger logger;
 	private static Socket s;
+<<<<<<< HEAD
+	//private static String serverIpAddress = "192.168.0.103"; 
+	private static String serverIpAddress = "192.168.0.102";
+=======
 	private static String serverIpAddress = "192.168.0.101"; 
+>>>>>>> 5f0e8d1aecf58719a059ea60d70de2339e04ab18
 
 	public static void main(String[] args) {
 		
